@@ -1,0 +1,31 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
+
+local player = Players.LocalPlayer
+local speed = 1        -- ตัวเลขความเร็วเริ่มต้น
+local enabled = true   -- เปิด/ปิด TPWalk
+
+-- TPWalk
+RunService.Heartbeat:Connect(function(dt)
+    if not enabled then return end
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if hum and root and hum.MoveDirection.Magnitude > 0 then
+        root.CFrame += hum.MoveDirection * speed * dt * 60
+    end
+end)
+
+-- พิมพ์ในแชทเพื่อปรับ: /speed 3  หรือ /tp (เปิด/ปิด)
+player.Chatted:Connect(function(msg)
+    local n = tonumber(msg:match("^/speed%s+([%d%.]+)"))
+    if n then speed = n end
+    if msg == "/tp" then enabled = not enabled end
+end)
+
+-- Anti-AFK
+player.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
